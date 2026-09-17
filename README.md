@@ -14,6 +14,10 @@ Custom Home Assistant integration for the **Lefant M1** robot vacuum cleaner com
 
 ## Features
 
+The extensions beyond the original v1 scope are retained for compatibility; see
+[design addendum](.rpiv/artifacts/designs/2026-09-17_v1-implementation-addendum.md).
+Fan speed, locate, spot cleaning and cleaning statistics remain experimental.
+
 - **100% Local Communication**: No cloud latency, no cloud dependency after obtaining the local key.
 - **Push-Based Updates (`local_push`)**: The robot pushes state and battery changes in real time via persistent TCP socket with periodic heartbeats.
 - **Vacuum Entity (`StateVacuumEntity`)**:
