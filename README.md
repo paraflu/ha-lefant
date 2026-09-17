@@ -1,5 +1,12 @@
 # Lefant M1 Robot Vacuum Home Assistant Integration
 
+> **⚠️ Experimental — M1 DP mappings are NOT physically confirmed.**
+> Mode, suction/fan speed and locate may not work. The M210 Pro Omni reference
+> uses different IDs/enums and cannot validate the M1. Status aliases, telemetry
+> units and other commands also remain provisional. See [issue #1](https://github.com/paraflu/ha-lefant/issues/1)
+> and research Decision Log **M1-DP-1**. Passing tests are not hardware validation.
+
+
 [![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 

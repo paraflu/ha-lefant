@@ -153,3 +153,23 @@ Nuove dalla research (da risolvere in design/implementazione):
 - HACS: https://www.hacs.xyz/docs/publish/integration/ · /docs/publish/start/ · /docs/publish/action/
 - Tuya/Lefant: https://github.com/k1rak1ra/SuccuBotServer (README.adoc, branch master) · https://github.com/hectorzin/Lefant-Home-Assistant-LocalTuya (README.md + schemas/Lefant_M210_PRO_OMNI.json) · https://www.home-assistant.io/integrations/tuya/
 - Testing: https://github.com/MatthewFlamm/pytest-homeassistant-custom-component (README @master)
+
+## Decision Log — M1-DP-1 (2026-09-17)
+
+Repository audit of implementation commit `f4f500b`: no raw M1 query snapshot,
+verified M1 enum schema, or manual-device test evidence accompanies the constants.
+Their original external source cannot be established from the artifacts or commit;
+treat them as **unverified implementation assumptions**, not manual verification.
+Q5's M210 Pro Omni schema is verified as a reference file, NOT on an M1:
+- implemented suction DP14 (quiet/normal/strong), reference DP9 (closed/gentle/normal/strong/superStrong);
+- implemented locate DP24, reference seek DP27;
+- implemented mode DP4 (smart/edge/spot/random/standby), reference smart/chargego/zone/pose/fastmapping;
+- implemented DP5 status aliases likewise have no M1 capture proving acceptance.
+
+Retain existing IDs/enums for compatibility, explicitly provisional; do not copy
+another model's schema. All other IDs, units, and command semantics also require
+M1 verification. No physical connection or credential extraction was performed.
+Open question **M1-DP-1** is tracked at https://github.com/paraflu/ha-lefant/issues/1.
+Resolution requires redacted owner-provided M1 status snapshots and verified
+command/enum observations. Unit tests demonstrate software consistency only.
+
