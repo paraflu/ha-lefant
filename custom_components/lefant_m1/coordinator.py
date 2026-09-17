@@ -17,7 +17,10 @@ from .pytuya_client import TuyaClient
 
 _LOGGER = logging.getLogger(__name__)
 
+# Source: original v1 design reconnect policy; 10s initial delay, x1.5, max 60s.
 RECONNECT_DELAY = 10.0
+RECONNECT_FACTOR = 1.5
+RECONNECT_MAX_DELAY = 60.0
 # Source: design addendum 2026-09-17, local reconciliation policy, not wire spec.
 RECONCILE_DELAY = 7.0
 
@@ -120,15 +123,17 @@ class LefantDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     listener=self,
                 )
                 await self.client.connect()
-                fresh_dps = await self.client.query_dps()
-                if fresh_dps:
-                    self.dps.update(fresh_dps)
-                self.async_set_updated_data(dict(self.dps))
+                self.status_updated(await self.client.query_dps())
                 _LOGGER.info("Reconnected successfully to Lefant M1 at %s", self.host)
                 return
+            except asyncio.CancelledError:
+                self.client.close()
+                raise
             except Exception as err:
+                # Source: design addendum; failed snapshot must not leak a live socket.
+                self.client.close()
                 _LOGGER.debug("Reconnection attempt to %s failed: %s", self.host, err)
-                backoff = min(backoff * 1.5, 60.0)
+                backoff = min(backoff * RECONNECT_FACTOR, RECONNECT_MAX_DELAY)
 
     async def async_set_dps(self, dps: dict[str, Any]) -> None:
         """Send DPs to robot and optimistically update local state."""

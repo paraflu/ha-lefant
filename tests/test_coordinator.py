@@ -2,6 +2,7 @@
 
 import asyncio
 from types import SimpleNamespace
+from typing import Any
 
 
 class FakeClient:
@@ -14,7 +15,7 @@ class FakeClient:
     async def connect(self):
         self.is_connected = True
 
-    async def query_dps(self):
+    async def query_dps(self) -> dict[str, Any]:
         self.queries += 1
         return dict(self.snapshot)
 
@@ -80,4 +81,107 @@ def test_stop_cancels_reconciliation(integration):
         await asyncio.sleep(0)
         assert task.cancelled()
         assert coordinator.client.queries == 0
+    asyncio.run(run())
+
+
+def test_reconnect_backoff_cleanup_and_single_task(integration, monkeypatch):
+    async def run():
+        coordinator = make_coordinator(integration)
+        coordinator.client.close()
+        clients = []
+        delays = []
+        real_sleep = asyncio.sleep
+
+        class RetryClient(FakeClient):
+            def __init__(self, **kwargs):
+                super().__init__()
+                self.number = len(clients)
+                clients.append(self)
+
+            async def query_dps(self) -> dict[str, Any]:
+                if self.number < 7:
+                    raise OSError("query failed after connect")
+                return {"23": 81}
+
+        async def sleep(delay):
+            delays.append(delay)
+            await real_sleep(0)
+
+        monkeypatch.setattr(integration.coordinator, "TuyaClient", RetryClient)
+        monkeypatch.setattr(integration.coordinator.asyncio, "sleep", sleep)
+        coordinator.disconnected()
+        task = coordinator._reconnect_task
+        coordinator.disconnected()
+        assert coordinator._reconnect_task is task
+        await task
+        # Research/design reconnect policy: 10s, x1.5, capped at 60s.
+        assert delays == [10, 15, 22.5, 33.75, 50.625, 60, 60, 60]
+        assert all(not client.is_connected for client in clients[:-1])
+        assert coordinator.is_connected
+        assert coordinator.dps["23"] == 81
+        assert coordinator._observed["23"] == 81
+        await coordinator.async_stop()
+        coordinator.disconnected()
+        assert coordinator._reconnect_task is task
+    asyncio.run(run())
+
+
+def test_reconcile_failure_rolls_back(integration, monkeypatch, caplog):
+    async def run():
+        monkeypatch.setattr(integration.coordinator, "RECONCILE_DELAY", 0)
+        coordinator = make_coordinator(integration)
+        coordinator.status_updated({"14": "normal"})
+
+        async def fail():
+            raise TimeoutError("test timeout")
+
+        coordinator.client.query_dps = fail
+        await coordinator.async_set_dps({"14": "strong", "24": True})
+        await coordinator._reconcile_task
+        assert coordinator.dps == {"14": "normal"}
+        assert not coordinator._pending
+        assert "reconciliation failed" in caplog.text
+        await coordinator.async_stop()
+    asyncio.run(run())
+
+
+def test_new_command_and_push_win_over_inflight_query(integration, monkeypatch):
+    async def run():
+        monkeypatch.setattr(integration.coordinator, "RECONCILE_DELAY", 0)
+        coordinator = make_coordinator(integration)
+        started, release = asyncio.Event(), asyncio.Event()
+
+        async def query():
+            started.set()
+            await release.wait()
+            return {"14": "normal", "23": 10}
+
+        coordinator.client.query_dps = query
+        await coordinator.async_set_dps({"14": "strong"})
+        await started.wait()
+        await coordinator.async_set_dps({"14": "quiet"})
+        coordinator.status_updated({"14": "quiet", "23": 90})
+        release.set()
+        await coordinator._reconcile_task
+        assert coordinator.dps == {"14": "quiet", "23": 90}
+        await coordinator.async_stop()
+    asyncio.run(run())
+
+
+def test_disconnect_cancels_timer_and_stop_cancels_backoff(integration):
+    async def run():
+        coordinator = make_coordinator(integration)
+        coordinator.status_updated({"14": "normal"})
+        await coordinator.async_set_dps({"14": "strong"})
+        reconcile = coordinator._reconcile_task
+        coordinator.client.close()
+        coordinator.disconnected()
+        reconnect = coordinator._reconnect_task
+        await asyncio.sleep(0)
+        assert reconcile.cancelled()
+        assert coordinator.dps["14"] == "normal"
+        assert not coordinator.is_connected
+        await coordinator.async_stop()
+        await asyncio.sleep(0)
+        assert reconnect.cancelled()
     asyncio.run(run())

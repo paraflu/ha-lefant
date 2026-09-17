@@ -85,6 +85,14 @@ You can extract the `Device ID` and `Local Key` using:
 | `24` | Locate Robot | `bool` | `true` (beep) |
 | `25` | Fault / Error | `bitmap/int` | Error code |
 
+## Command confirmation
+
+Commands update the local cache optimistically. If no matching STATUS arrives
+within 7 seconds, the integration logs a warning and queries actual DPs. Unrelated
+pushes do not confirm commands; disconnect/unload cancels pending reconciliation.
+Query failure discards unconfirmed optimism and retains last observed values.
+This recovery policy does not prove that the robot performed an action.
+
 ## Running Unit Tests
 
 ```bash
