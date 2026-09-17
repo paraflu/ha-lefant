@@ -28,3 +28,5 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
+          # Not yet published to HACS/home-assistant brands; skip that check.
+          ignore: brands
