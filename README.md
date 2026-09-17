@@ -40,7 +40,7 @@ You can extract the `Device ID` and `Local Key` using:
 ### Method 1: HACS (Recommended)
 1. Open **HACS** in Home Assistant.
 2. Click **Integrations** > **Three dots (top right)** > **Custom repositories**.
-3. Add `https://github.com/andreaforlin/ha-lefant` as an **Integration**.
+3. Add `https://github.com/paraflu/ha-lefant` as an **Integration**.
 4. Search for **Lefant M1 Vacuum** and click **Download**.
 5. Restart Home Assistant.
 
