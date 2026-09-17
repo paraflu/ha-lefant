@@ -49,7 +49,7 @@ class LefantDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def is_connected(self) -> bool:
         """Return True if the Tuya client connection is active."""
-        return self.client._writer is not None and not self.client._closing
+        return self.client.is_connected
 
     async def async_start(self) -> None:
         """Connect to the robot and fetch initial state snapshot."""

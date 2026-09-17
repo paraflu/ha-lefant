@@ -167,6 +167,15 @@ class TuyaClient:
         self._tasks: list[asyncio.Task] = []
         self._closing = False
 
+    @property
+    def is_connected(self) -> bool:
+        """Return whether the transport is open (not a command acknowledgement)."""
+        return (
+            self._writer is not None
+            and not self._closing
+            and not self._writer.is_closing()
+        )
+
     async def connect(self) -> None:
         """Open the socket and negotiate the session key.
 
