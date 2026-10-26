@@ -7,3 +7,7 @@ __pycache__/
 .DS_Store
 .venv/
 env/
+
+# Local app artifacts (reverse-engineering input, never commit)
+*.xapk
+*.apk
