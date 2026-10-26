@@ -1,16 +1,12 @@
 {
   "domain": "lefant_m1",
   "name": "Lefant M1 Vacuum",
-  "codeowners": [
-    "@paraflu"
-  ],
+  "codeowners": ["@paraflu"],
   "config_flow": true,
   "documentation": "https://github.com/paraflu/ha-lefant",
   "integration_type": "device",
   "iot_class": "local_push",
-  "requirements": [
-    "cryptography>=3.4.0"
-  ],
+  "requirements": ["cryptography>=3.4.0", "tinytuya>=1.20.0"],
   "version": "1.0.0",
   "issue_tracker": "https://github.com/paraflu/ha-lefant/issues"
 }
