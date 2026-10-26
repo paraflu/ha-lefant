@@ -18,6 +18,14 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import DOMAIN, DP_BATTERY, DP_CLEAN_AREA, DP_CLEAN_TIME
 from .coordinator import LefantDataUpdateCoordinator
 
+# Entity registry identity must survive DP corrections. These suffixes shipped
+# with the original mapping; use the corrected description.key only for reads.
+_SENSOR_ID_SUFFIXES = {
+    DP_BATTERY: "23",
+    DP_CLEAN_TIME: "18",
+    DP_CLEAN_AREA: "19",
+}
+
 SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
     SensorEntityDescription(
         key=DP_BATTERY,
@@ -69,7 +77,7 @@ class LefantM1Sensor(CoordinatorEntity[LefantDataUpdateCoordinator], SensorEntit
         """Initialize the sensor."""
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = f"{coordinator.device_id}_{description.key}"
+        self._attr_unique_id = f"{coordinator.device_id}_{_SENSOR_ID_SUFFIXES[description.key]}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.device_id)},
             name=f"Lefant M1 ({coordinator.device_id[-4:] if len(coordinator.device_id) >= 4 else coordinator.device_id})",
