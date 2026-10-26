@@ -69,3 +69,18 @@ if __name__ == "__main__":
     test_idle_and_sleep_states()
     test_error_code_override()
     print("all state mapping tests passed")
+
+
+def test_provisional_status_aliases_and_reference_mode_values() -> None:
+    # Research Q5 / M1-DP-1: mode enums must not be invented as status aliases.
+    for value in ("smart", "edge", "spot", "random", "smart_clean", "wall_clean",
+                  "spot_clean", "random_clean"):
+        assert map_status_to_activity(value) == ACTIVITY_CLEANING
+    for value in ("smart_clean_pause", "wall_clean_pause", "spot_clean_pause",
+                  "goto_charge_pause", "pause"):
+        assert map_status_to_activity(value) == ACTIVITY_PAUSED
+    for value in ("chargego", "zone", "pose", "fastmapping", "relocating"):
+        # No M1 confirmation: retain the unknown-status fallback, not guessing.
+        assert map_status_to_activity(value) == ACTIVITY_IDLE
+        assert map_status_to_activity(value, 1) == ACTIVITY_ERROR
+    assert map_status_to_activity("  SMART  ") == ACTIVITY_CLEANING

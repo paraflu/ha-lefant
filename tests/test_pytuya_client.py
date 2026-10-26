@@ -165,3 +165,18 @@ if __name__ == "__main__":
     test_push_dispatch_calls_listener()
     test_set_dps_payload_shape()
     print("all pytuya_client tests passed")
+
+
+def test_is_connected_lifecycle() -> None:
+    """Public transport status follows StreamWriter closure, not device success."""
+    from types import SimpleNamespace
+
+    client = tc.TuyaClient("host", "device", _key().decode())
+    assert not client.is_connected
+    client._writer = SimpleNamespace(is_closing=lambda: False)
+    assert client.is_connected
+    client._writer = SimpleNamespace(is_closing=lambda: True)
+    assert not client.is_connected
+    client._writer = SimpleNamespace(is_closing=lambda: False, close=lambda: None)
+    client.close()
+    assert not client.is_connected

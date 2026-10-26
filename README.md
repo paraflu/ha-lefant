@@ -1,11 +1,22 @@
 # Lefant M1 Robot Vacuum Home Assistant Integration
 
+> **⚠️ Experimental — M1 DP mappings are NOT physically confirmed.**
+> Mode, suction/fan speed and locate may not work. The M210 Pro Omni reference
+> uses different IDs/enums and cannot validate the M1. Status aliases, telemetry
+> units and other commands also remain provisional. See [issue #1](https://github.com/paraflu/ha-lefant/issues/1)
+> and research Decision Log **M1-DP-1**. Passing tests are not hardware validation.
+
+
 [![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Custom Home Assistant integration for the **Lefant M1** robot vacuum cleaner communicating directly over the **local Wi-Fi network (Tuya LAN protocol 3.5)**.
 
 ## Features
+
+The extensions beyond the original v1 scope are retained for compatibility; see
+[design addendum](.rpiv/artifacts/designs/2026-09-17_v1-implementation-addendum.md).
+Fan speed, locate, spot cleaning and cleaning statistics remain experimental.
 
 - **100% Local Communication**: No cloud latency, no cloud dependency after obtaining the local key.
 - **Push-Based Updates (`local_push`)**: The robot pushes state and battery changes in real time via persistent TCP socket with periodic heartbeats.
@@ -73,6 +84,14 @@ You can extract the `Device ID` and `Local Key` using:
 | `23` | Battery Level | `int` | 0-100% |
 | `24` | Locate Robot | `bool` | `true` (beep) |
 | `25` | Fault / Error | `bitmap/int` | Error code |
+
+## Command confirmation
+
+Commands update the local cache optimistically. If no matching STATUS arrives
+within 7 seconds, the integration logs a warning and queries actual DPs. Unrelated
+pushes do not confirm commands; disconnect/unload cancels pending reconciliation.
+Query failure discards unconfirmed optimism and retains last observed values.
+This recovery policy does not prove that the robot performed an action.
 
 ## Running Unit Tests
 

@@ -10,24 +10,37 @@ CONF_DEVICE_ID = "device_id"
 CONF_LOCAL_KEY = "local_key"
 
 # Tuya Data Points (DPs) for Lefant M1
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_SWITCH_GO = "1"  # bool: rw - True=start/resume, False=pause/stop
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_PAUSE = "2"  # bool: rw - True=pause, False=resume
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_SWITCH_CHARGE = "3"  # bool: rw - True=return to dock
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_MODE = "4"  # str: rw - clean mode ("smart", "edge", "spot", "random", "standby")
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_STATUS = "5"  # str: ro - working status string
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_SUCTION = "14"  # str: rw - fan speed ("quiet", "normal", "strong")
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_CLEAN_TIME = "18"  # int: ro - clean duration in minutes
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_CLEAN_AREA = "19"  # int: ro - cleaned area in m²
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_BATTERY = "23"  # int: ro - battery percentage (0-100)
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_LOCATE = "24"  # bool: rw - locate robot beep
+# TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.
 DP_ERROR_CODE = "25"  # int: ro - fault error bitmap / integer
 
+# TODO(M1): enums unconfirmed; research Q5 / Decision Log M1-DP-1, issue #1.
 # Vacuum Fan Speeds
 FAN_SPEED_QUIET = "quiet"
 FAN_SPEED_NORMAL = "normal"
 FAN_SPEED_STRONG = "strong"
 FAN_SPEED_LIST = [FAN_SPEED_QUIET, FAN_SPEED_NORMAL, FAN_SPEED_STRONG]
 
+# TODO(M1): enums unconfirmed; research Q5 / Decision Log M1-DP-1, issue #1.
 # Cleaning Modes
 MODE_SMART = "smart"
 MODE_EDGE = "edge"
@@ -43,6 +56,7 @@ ACTIVITY_PAUSED = "paused"
 ACTIVITY_RETURNING = "returning"
 ACTIVITY_ERROR = "error"
 
+# TODO(M1): status aliases unconfirmed; research Q5 / Decision Log M1-DP-1, issue #1.
 # Mapping from DP5 (and raw status strings) to HA VacuumActivity values
 STATUS_TO_ACTIVITY: dict[str, str] = {
     # Cleaning states
