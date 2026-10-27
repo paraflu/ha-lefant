@@ -11,3 +11,9 @@ env/
 # Local app artifacts (reverse-engineering input, never commit)
 *.xapk
 *.apk
+
+# Credentials (device local key must never be committed)
+.env
+.env.*
+!.env.example
+*.swp
