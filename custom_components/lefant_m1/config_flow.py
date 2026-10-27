@@ -6,15 +6,21 @@ import asyncio
 import logging
 from typing import Any
 
-from cryptography.exceptions import InvalidTag
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_DEVICE_ID, CONF_LOCAL_KEY, DOMAIN
-from .pytuya_client import DecodeError, TuyaClient
+from .const import (
+    CONF_DEVICE_ID,
+    CONF_LOCAL_KEY,
+    CONF_PROTOCOL,
+    DEFAULT_PROTOCOL,
+    DOMAIN,
+    SUPPORTED_PROTOCOLS,
+)
+from .tuya_lan_adapter import TinytuyaClient, TuyaLanAuthError, TuyaLanConnectionError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,17 +29,26 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_HOST): str,
         vol.Required(CONF_DEVICE_ID): str,
         vol.Required(CONF_LOCAL_KEY): str,
+        vol.Optional(CONF_PROTOCOL, default=DEFAULT_PROTOCOL): vol.In(
+            list(SUPPORTED_PROTOCOLS)
+        ),
     }
 )
 
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate that we can connect to the robot and negotiate a session key."""
+    """Validate that we can connect to the robot and read its datapoints."""
     host = data[CONF_HOST].strip()
     device_id = data[CONF_DEVICE_ID].strip()
     local_key = data[CONF_LOCAL_KEY].strip()
+    version = float(data.get(CONF_PROTOCOL, DEFAULT_PROTOCOL))
 
-    client = TuyaClient(host=host, device_id=device_id, local_key=local_key)
+    client = TinytuyaClient(
+        host=host,
+        device_id=device_id,
+        local_key=local_key,
+        version=version,
+    )
     try:
         await client.connect()
         await client.query_dps()
@@ -61,9 +76,9 @@ class LefantM1ConfigFlow(ConfigFlow, domain=DOMAIN):
 
             try:
                 info = await validate_input(self.hass, user_input)
-            except InvalidTag:
+            except TuyaLanAuthError:
                 errors["base"] = "invalid_auth"
-            except (ConnectionError, OSError, asyncio.TimeoutError, DecodeError):
+            except (TuyaLanConnectionError, ConnectionError, OSError, asyncio.TimeoutError):
                 errors["base"] = "cannot_connect"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception during Lefant M1 setup")

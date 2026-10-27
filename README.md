@@ -25,13 +25,13 @@ local key). That version was measured on two independent M1 units — firmware
 - **UI Config Flow**: setup from the Home Assistant UI with connection validation.
 - **Diagnostics tools** (see [Tools](#tools)): network identification and read-only DP probing.
 
-### ⚠️ Current transport gap
+### Private LAN transport
 
-The integration still builds its legacy **3.5** client (`custom_components/lefant_m1/pytuya_client.py`,
-`0x6699` framing, AES-GCM). The Tinytuya **3.3** adapter
-(`custom_components/lefant_m1/tuya_lan_adapter.py`) is implemented and tested but
-**not yet wired into the coordinator**. Until that lands, the config flow will
-fail to connect even with a correct key. Track this in the repository issues.
+The integration talks to the robot with [tinytuya](https://github.com/jasonacox/tinytuya),
+which implements Tuya LAN 3.1–3.5. The protocol version is a config field
+defaulting to **3.3**, the version the M1 actually answers. Updates arrive from a
+4-second poll (`local_polling`), not from a device push: Tinytuya is
+request/response, so there is no persistent push channel to listen on.
 
 ## Prerequisites: IP Address, Device ID and Local Key
 

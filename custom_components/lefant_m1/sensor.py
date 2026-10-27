@@ -83,7 +83,7 @@ class LefantM1Sensor(CoordinatorEntity[LefantDataUpdateCoordinator], SensorEntit
             name=f"Lefant M1 ({coordinator.device_id[-4:] if len(coordinator.device_id) >= 4 else coordinator.device_id})",
             manufacturer="Lefant",
             model="M1",
-            sw_version="Tuya LAN 3.5",
+            sw_version=f"Tuya LAN {coordinator.protocol:.1f}",
         )
 
     @property

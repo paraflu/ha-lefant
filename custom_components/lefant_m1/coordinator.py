@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for Lefant M1 robot vacuum (push-based)."""
+"""DataUpdateCoordinator for Lefant M1 robot vacuum (LAN polling)."""
 
 from __future__ import annotations
 
@@ -12,8 +12,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
-from .const import CONF_DEVICE_ID, CONF_LOCAL_KEY, DOMAIN
-from .pytuya_client import TuyaClient
+from .const import (
+    CONF_DEVICE_ID,
+    CONF_LOCAL_KEY,
+    CONF_PROTOCOL,
+    DEFAULT_PROTOCOL,
+    DOMAIN,
+)
+from .tuya_lan_adapter import TinytuyaClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,14 +46,11 @@ class LefantDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.host: str = entry.data[CONF_HOST]
         self.device_id: str = entry.data[CONF_DEVICE_ID]
         self.local_key: str = entry.data[CONF_LOCAL_KEY]
+        # The M1 answers 3.3; tinytuya also covers 3.4/3.5 for other models.
+        self.protocol: float = float(entry.data.get(CONF_PROTOCOL, DEFAULT_PROTOCOL))
 
         self.dps: dict[str, Any] = {}
-        self.client: TuyaClient = TuyaClient(
-            host=self.host,
-            device_id=self.device_id,
-            local_key=self.local_key,
-            listener=self,
-        )
+        self.client: TinytuyaClient = self._make_client()
         self._reconnect_task: asyncio.Task[None] | None = None
         self._stopping: bool = False
         self._reconcile_task: asyncio.Task[None] | None = None
@@ -55,6 +58,16 @@ class LefantDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._pending: dict[str, tuple[Any, int, float]] = {}
         self._revision = 0
         self._versions: dict[str, int] = {}
+
+    def _make_client(self) -> TinytuyaClient:
+        """Build a LAN client for the configured protocol version."""
+        return TinytuyaClient(
+            host=self.host,
+            device_id=self.device_id,
+            local_key=self.local_key,
+            listener=self,
+            version=self.protocol,
+        )
 
     @property
     def is_connected(self) -> bool:
@@ -116,12 +129,7 @@ class LefantDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 break
             _LOGGER.debug("Attempting to reconnect to Lefant M1 at %s", self.host)
             try:
-                self.client = TuyaClient(
-                    host=self.host,
-                    device_id=self.device_id,
-                    local_key=self.local_key,
-                    listener=self,
-                )
+                self.client = self._make_client()
                 await self.client.connect()
                 self.status_updated(await self.client.query_dps())
                 _LOGGER.info("Reconnected successfully to Lefant M1 at %s", self.host)

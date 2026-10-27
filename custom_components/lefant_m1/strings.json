@@ -3,17 +3,18 @@
     "step": {
       "user": {
         "title": "Connect to Lefant M1",
-        "description": "Enter your Lefant M1 connection details. For a robot paired only with the Lefant app, Tuya IoT cloud APIs typically do not expose its Local Key. See the extraction guide referenced by this integration (hectorzin/Lefant-Home-Assistant-LocalTuya, app-traffic/MITM approach). Obtain the key separately on your own device; this integration does not extract it. Keep the key private.",
+        "description": "Enter your Lefant M1 connection details. The robot speaks Tuya LAN protocol 3.3 (measured on hardware); 3.4/3.5 are available for other Lefant models. The Local Key is a per-device credential that no cloud wizard returns for a robot paired with the Lefant app: use the extraction guide in the README (Frida hook on the app's SDK object, no rooted phone needed). This integration does not extract it. Keep the key private.",
         "data": {
           "host": "IP Address",
           "device_id": "Device ID",
-          "local_key": "Local Key"
+          "local_key": "Local Key",
+          "protocol": "Tuya protocol version"
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect to the robot on TCP port 6668. Verify the IP address and make sure the robot is powered on and connected to Wi-Fi.",
-      "invalid_auth": "Invalid Local Key. Encryption handshake failed.",
+      "invalid_auth": "Local Key rejected, or the protocol version is wrong for this robot. The M1 answers 3.3.",
       "unknown": "Unexpected error occurred during connection test."
     },
     "abort": {
