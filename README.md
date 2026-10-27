@@ -7,6 +7,9 @@
 > are not hardware validation. See [issue #1](https://github.com/paraflu/ha-lefant/issues/1).
 
 
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=paraflu&repository=ha-lefant&category=integration)
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=lefant_m1)
+
 [![HACS Custom Repository](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -25,13 +28,13 @@ local key). That version was measured on two independent M1 units — firmware
 - **UI Config Flow**: setup from the Home Assistant UI with connection validation.
 - **Diagnostics tools** (see [Tools](#tools)): network identification and read-only DP probing.
 
-### ⚠️ Current transport gap
+### Private LAN transport
 
-The integration still builds its legacy **3.5** client (`custom_components/lefant_m1/pytuya_client.py`,
-`0x6699` framing, AES-GCM). The Tinytuya **3.3** adapter
-(`custom_components/lefant_m1/tuya_lan_adapter.py`) is implemented and tested but
-**not yet wired into the coordinator**. Until that lands, the config flow will
-fail to connect even with a correct key. Track this in the repository issues.
+The integration talks to the robot with [tinytuya](https://github.com/jasonacox/tinytuya),
+which implements Tuya LAN 3.1–3.5. The protocol version is a config field
+defaulting to **3.3**, the version the M1 actually answers. Updates arrive from a
+4-second poll (`local_polling`), not from a device push: Tinytuya is
+request/response, so there is no persistent push channel to listen on.
 
 ## Prerequisites: IP Address, Device ID and Local Key
 
@@ -154,6 +157,9 @@ read-only and never prints the key.
 ## Installation
 
 ### Method 1: HACS (Recommended)
+
+Click the badge at the top of this page, or add the repository manually:
+
 1. Open **HACS** > **Integrations** > **Three dots (top right)** > **Custom repositories**.
 2. Add `https://github.com/paraflu/ha-lefant` as an **Integration**.
 3. Search for **Lefant M1 Vacuum** and click **Download**.
@@ -164,6 +170,9 @@ read-only and never prints the key.
 2. Restart Home Assistant.
 
 ## Configuration
+
+Click the **Add integration** badge at the top of this page (it only works once
+the integration is installed), or:
 
 1. **Settings** > **Devices & Services** > **Add Integration** > **Lefant M1 Vacuum**.
 2. Enter **IP Address**, **Device ID**, **Local Key**.

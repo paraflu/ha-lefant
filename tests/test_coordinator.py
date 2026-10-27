@@ -107,7 +107,8 @@ def test_reconnect_backoff_cleanup_and_single_task(integration, monkeypatch):
             delays.append(delay)
             await real_sleep(0)
 
-        monkeypatch.setattr(integration.coordinator, "TuyaClient", RetryClient)
+        # The coordinator builds its LAN client through _make_client().
+        monkeypatch.setattr(integration.coordinator, "TinytuyaClient", RetryClient)
         monkeypatch.setattr(integration.coordinator.asyncio, "sleep", sleep)
         coordinator.disconnected()
         task = coordinator._reconnect_task
@@ -184,4 +185,35 @@ def test_disconnect_cancels_timer_and_stop_cancels_backoff(integration):
         await coordinator.async_stop()
         await asyncio.sleep(0)
         assert reconnect.cancelled()
+    asyncio.run(run())
+
+
+def test_client_uses_configured_protocol(integration):
+    # The M1 answers 3.3; tinytuya covers 3.4/3.5 for other models, so the
+    # protocol has to come from the entry rather than be hardcoded.
+    async def run():
+        coordinator = make_coordinator(integration)
+        assert coordinator.protocol == 3.3
+        client = coordinator._make_client()
+        assert client.version == 3.3
+        assert client.host == coordinator.host
+        assert client.dev_id == coordinator.device_id
+        assert client.listener is coordinator
+
+        coordinator.entry.data["protocol"] = 3.5
+        coordinator.protocol = float(coordinator.entry.data["protocol"])
+        assert coordinator._make_client().version == 3.5
+    asyncio.run(run())
+
+
+def test_unknown_protocol_is_rejected(integration):
+    async def run():
+        coordinator = make_coordinator(integration)
+        coordinator.protocol = 9.9
+        try:
+            coordinator._make_client()
+        except ValueError as err:
+            assert "non supportata" in str(err)
+        else:  # pragma: no cover - guard must not regress silently
+            raise AssertionError("una versione non supportata deve essere rifiutata")
     asyncio.run(run())

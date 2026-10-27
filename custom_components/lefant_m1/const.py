@@ -8,6 +8,12 @@ DOMAIN = "lefant_m1"
 CONF_HOST = "host"
 CONF_DEVICE_ID = "device_id"
 CONF_LOCAL_KEY = "local_key"
+CONF_PROTOCOL = "protocol"
+
+# Tuya LAN protocol version spoken by the robot. Measured 3.3 on physical M1.
+# tinytuya covers 3.1-3.5, so other Lefant models can be configured too.
+DEFAULT_PROTOCOL = 3.3
+SUPPORTED_PROTOCOLS = (3.1, 3.3, 3.4, 3.5)
 
 # Tuya Data Points (DPs) for Lefant M1
 # TODO(M1): unconfirmed on physical device; research Q5 / Decision Log M1-DP-1, issue #1.

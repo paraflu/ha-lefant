@@ -20,7 +20,7 @@ def test_fan_speed_and_locate_mapping(integration):
         async def set_dp(dp, value):
             calls.append((dp, value))
 
-        coordinator = SimpleNamespace(device_id="test", is_connected=True,
+        coordinator = SimpleNamespace(device_id="test", protocol=3.3, is_connected=True,
                                       dps={}, async_set_dp=set_dp)
         vacuum = integration.vacuum.LefantM1Vacuum(coordinator)
         # DP9 is corroborated by issue #1; gentle/normal come from the APK.
@@ -41,7 +41,7 @@ def test_fan_speed_and_locate_mapping(integration):
 
 
 def test_cleaning_sensor_mapping(integration):
-    coordinator = SimpleNamespace(device_id="test", is_connected=True,
+    coordinator = SimpleNamespace(device_id="test", protocol=3.3, is_connected=True,
                                   dps={"6": 12, "7": 34, "8": 81})
     descriptions = {item.key: item for item in integration.sensor.SENSOR_TYPES}
     for dp, value, unit in (("6", 12, "min"), ("7", 34, "m²"), ("8", 81, "%")):
@@ -53,7 +53,7 @@ def test_cleaning_sensor_mapping(integration):
 
 
 def test_sensor_registry_ids_survive_dp_correction(integration):
-    coordinator = SimpleNamespace(device_id="test", is_connected=True,
+    coordinator = SimpleNamespace(device_id="test", protocol=3.3, is_connected=True,
                                   dps=dict(M1_SNAPSHOT))
     expected_suffixes = {"8": "23", "6": "18", "7": "19"}
     for description in integration.sensor.SENSOR_TYPES:
@@ -63,7 +63,7 @@ def test_sensor_registry_ids_survive_dp_correction(integration):
 
 
 def test_physical_m1_snapshot_mapping(integration):
-    coordinator = SimpleNamespace(device_id="test", is_connected=True,
+    coordinator = SimpleNamespace(device_id="test", protocol=3.3, is_connected=True,
                                   dps=dict(M1_SNAPSHOT))
     vacuum = integration.vacuum.LefantM1Vacuum(coordinator)
     assert vacuum.battery_level == 100
@@ -84,7 +84,7 @@ def test_physical_m1_snapshot_mapping(integration):
 
 
 def test_fault_uses_dp28_not_legacy_dp25(integration):
-    coordinator = SimpleNamespace(device_id="test", is_connected=True,
+    coordinator = SimpleNamespace(device_id="test", protocol=3.3, is_connected=True,
                                   dps={**M1_SNAPSHOT, "25": 99})
     vacuum = integration.vacuum.LefantM1Vacuum(coordinator)
     assert vacuum.activity == integration.vacuum.VacuumActivity.IDLE
@@ -94,7 +94,7 @@ def test_fault_uses_dp28_not_legacy_dp25(integration):
 
 
 def test_legacy_dp_ids_do_not_supply_telemetry(integration):
-    coordinator = SimpleNamespace(device_id="test", is_connected=True,
+    coordinator = SimpleNamespace(device_id="test", protocol=3.3, is_connected=True,
                                   dps={"14": "strong", "18": 12,
                                        "19": 34, "23": 90, "25": 1})
     vacuum = integration.vacuum.LefantM1Vacuum(coordinator)

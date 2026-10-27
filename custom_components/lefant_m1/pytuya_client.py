@@ -6,6 +6,13 @@ the listener (`status_updated(dps)` / `disconnected()` duck-typed interface).
 
 Protocol reference (public specs): tinytuya core/ (MIT) and
 tuya-iotos-embeded-sdk-wifi-ble-bk7231n sdk/include/lan_protocol.h.
+
+.. deprecated:: 1.1.0
+   Unused by the integration since the coordinator moved to
+   :mod:`custom_components.lefant_m1.tuya_lan_adapter` (tinytuya). This file
+   speaks **only** 3.5 (0x6699 framing, AES-GCM, session negotiation) and the
+   M1 answers 3.3, so it cannot complete even its first frame. Kept temporarily
+   for reference and its own tests; scheduled for removal.
 """
 
 from __future__ import annotations
